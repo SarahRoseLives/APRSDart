@@ -3,6 +3,7 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import '../../tnc/benshi/radio_controller.dart';
 import '../../tnc/mobilinkd/mobilinkd_controller.dart';
 import '../map/map.dart';
+import '../packets/packets.dart'; // <-- Import the new packets screen
 
 // Enum to manage connection state for clarity
 enum ConnectionStatus { disconnected, connecting, connected }
@@ -107,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _status = ConnectionStatus.connected;
       });
 
-      // ---- KEY CHANGE: Automatic navigation removed, SnackBar restored for feedback ----
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -174,7 +174,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
 
-          // --- DYNAMIC Status bar ---
           _buildStatusCard(),
           const SizedBox(height: 16),
 
@@ -219,21 +218,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
+                // ---- KEY CHANGE: "About" button is now "Packets" button ----
                 _HomeNavButton(
-                  icon: Icons.info,
-                  label: 'About',
+                  icon: Icons.list_alt_rounded,
+                  label: 'Packets',
                   onTap: () {
-                    showAboutDialog(
-                      context: context,
-                      applicationName: 'APRSDart',
-                      applicationVersion: '0.3.0',
-                      applicationIcon: const Icon(Icons.radio),
-                      children: [
-                        const Text(
-                          'APRSDart is a modern APRS client built in Flutter/Dart.\nInspired by APRSDroid.',
-                        ),
-                      ],
-                    );
+                    if (_status == ConnectionStatus.connected && _activeController != null) {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => PacketsScreen(controller: _activeController!),
+                      ));
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please connect to a TNC first.')),
+                      );
+                    }
                   },
                 ),
               ],
